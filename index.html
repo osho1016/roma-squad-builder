@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROMA TACTICS - MEGA SQUAD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@900&family=Noto+Sans+JP:wght@900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --roma-red: #8E1F2F; --roma-gold: #F0BC42; --bg-dark: #1a1a1a; --bg-light: #2a2a2a; }
+        * { user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; }
+        body { background: #000; margin: 0; color: white; height: 100vh; font-family: 'Exo 2', 'Noto Sans JP', sans-serif; overflow: hidden; touch-action: none; }
+        #fade-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 1.0s ease-in-out; }
+        #gacha-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #333 0%, #000 100%); }
+        #gacha-container { position: relative; width: 220px; height: 300px; display: flex; align-items: center; justify-content: center; }
+        .flip-card { width: 200px; height: 270px; perspective: 1000px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; animation: gacha-spin 0.8s ease-out forwards; }
+        @keyframes gacha-spin { 0% { transform: rotateY(0deg) scale(0.5); opacity: 0; filter: brightness(1); } 70% { transform: rotateY(720deg) scale(1.1); opacity: 1; filter: brightness(2); } 100% { transform: rotateY(720deg) scale(1); opacity: 1; filter: brightness(1); } }
+        .card-front { width: 100%; height: 100%; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; background: var(--roma-red); border: 3px solid var(--roma-gold); }
+        .gacha-icon { width: 90px; height: 90px; background: #fff; clip-path: polygon(20% 10%, 35% 0%, 65% 0%, 80% 10%, 100% 20%, 85% 45%, 75% 40%, 75% 100%, 25% 100%, 25% 40%, 15% 45%, 0% 20%); position: absolute; top: 50px; }
+        .gacha-name { font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.8); width: 100%; text-align: center; padding: 12px 0; border-radius: 0 0 10px 10px; }
+        #pitch-screen { display: none; height: 100vh; flex-direction: column; align-items: center; padding-top: 5px; }
+        #capture-area { background: #000; padding: 5px; display: flex; flex-direction: column; align-items: center; width: 360px; box-sizing: border-box; }
+        .squad-title { font-size: 14px; color: var(--roma-gold); font-style: italic; margin-bottom: 5px; letter-spacing: 2px; }
+        .formation-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 5px; padding: 5px; background: #111; border-radius: 10px; border: 1px solid #333; width: 100%; }
+        .form-btn { padding: 5px 0; font-size: 11px; font-weight: 900; color: #777; border-radius: 4px; border: none; background: #222; cursor: pointer; }
+        .form-btn.active { background: var(--roma-gold); color: #000; }
+        .pitch { width: 340px; height: 370px; border: 2px solid #444; position: relative; border-radius: 8px; background: var(--bg-dark); background-image: repeating-linear-gradient(0deg, var(--bg-light) 0, var(--bg-light) 37px, var(--bg-dark) 37px, var(--bg-dark) 74px); }
+        .player-picto { position: absolute; width: 50px; height: 65px; margin-left: -25px; margin-top: -32px; display: flex; flex-direction: column; align-items: center; z-index: 20; transition: transform 0.2s, filter 0.2s; }
+        .picto-head { width: 16px; height: 16px; border-radius: 50%; margin-bottom: 2px; background: var(--roma-red); border: 1px solid rgba(255,255,255,0.1); }
+        .picto-body { width: 22px; height: 20px; border-radius: 2px; background: var(--roma-red); border: 1px solid rgba(255,255,255,0.1); }
+        .picto-name { font-size: 10px; font-weight: 900; margin-top: 3px; text-align: center; white-space: nowrap; text-shadow: 2px 2px 4px #000; }
+        .drag-guide { font-size: 9px; color: #888; margin: 8px 0 2px 0; font-weight: normal; }
+        @keyframes spark-burst { 0% { transform: scale(0.5); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
+        .spark { position: absolute; pointer-events: none; width: 50px; height: 50px; border: 1px solid var(--roma-gold); border-radius: 50%; animation: spark-burst 0.3s ease-out forwards; z-index: 50; margin-left: -25px; margin-top: -25px; }
+        .dragging { opacity: 0.4 !important; z-index: 1000 !important; }
+        .tap-selected { transform: scale(1.15); filter: brightness(1.3); z-index: 999; }
+        .tap-selected .picto-body { outline: 3px solid var(--roma-gold); outline-offset: 2px; }
+        #power-score { position: absolute; bottom: 10px; right: 15px; font-size: 52px; font-weight: 900; color: var(--roma-gold); text-shadow: 0 0 15px rgba(0,0,0,1); display: none; z-index: 5; }
+        .bench-wrapper { width: 340px; height: 75px; position: relative; border-top: 1px solid #333; }
+        .bench-container { position: relative; width: 100%; height: 100%; }
+        .controls { display: flex; gap: 8px; width: 360px; justify-content: center; margin-top: 10px; }
+        .gacha-btn { padding: 12px 10px; background: var(--roma-gold); font-weight: 900; border-radius: 50px; border: none; color: #000; font-size: 13px; flex: 1; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="fade-overlay"></div>
+    <div id="gacha-screen">
+        <h1 style="color:var(--roma-gold); font-style:italic;">ROMA SQUAD</h1>
+        <h3 id="gacha-count">0 / 14</h3>
+        <div id="gacha-container"></div>
+        <button id="startBtn" class="gacha-btn" style="flex:none; width:200px; margin-top:30px;">スカウト開始</button>
+    </div>
+    <div id="pitch-screen">
+        <div id="capture-area">
+            <div class="squad-title">ROMA SQUAD</div>
+            <div class="formation-nav" id="form-nav"></div>
+            <div class="pitch">
+                <div id="pitch-area"></div>
+                <div id="power-score">000</div>
+            </div>
+            <div class="drag-guide">ドラッグ＆ドロップで入れ替え可能</div>
+            <div class="bench-wrapper">
+                <div class="bench-container" id="bench-area"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="saveBtn" class="gacha-btn" style="background:#fff;">画像を保存</button>
+            <button id="analyzeBtn" class="gacha-btn">戦力を測定</button>
+        </div>
+    </div>
+
+    <script>
+        const fpDatabase = [
+            { name: "トッティ", power: 10, bestPos: ["ST", "SS", "AMF"], subPos: ["LWG"] },
+            { name: "デ・ロッシ", power: 10, bestPos: ["CMF"], subPos: ["CB"] },
+            { name: "クリスタンテ", power: 8, bestPos: ["CMF"], subPos: ["CB", "AMF", "SS"] },
+            { name: "エル・シャーラウィ", power: 8, bestPos: ["SS", "LWG", "LMF"], subPos: ["LWB", "RMF", "RWG", "ST"] },
+            { name: "ペッレグリーニ", power: 9, bestPos: ["AMF", "SS", "CMF"], subPos: ["LWG", "LMF"] },
+            { name: "マンチーニ", power: 8, bestPos: ["CB"], subPos: ["RSB"] },
+            { name: "フロレンツィ", power: 8, bestPos: ["RSB", "RWB", "RMF"], subPos: ["CMF", "RWG"] },
+            { name: "ジェコ", power: 9, bestPos: ["ST"], subPos: [] },
+            { name: "マノラス", power: 9, bestPos: ["CB"], subPos: [] },
+            { name: "ナインゴラン", power: 9, bestPos: ["CMF", "AMF", "SS"], subPos: [] },
+            { name: "ファシオ", power: 8, bestPos: ["CB"], subPos: [] },
+            { name: "カルスドルプ", power: 7, bestPos: ["RSB", "RWB"], subPos: [] },
+            { name: "スモーリング", power: 8, bestPos: ["CB"], subPos: [] },
+            { name: "スピナッツォーラ", power: 8, bestPos: ["LSB", "LWB"], subPos: ["LMF", "RSB", "RWB"] },
+            { name: "イバニェス", power: 8, bestPos: ["CB"], subPos: [] },
+            { name: "ペロッティ", power: 8, bestPos: ["LWG", "LMF", "SS"], subPos: ["AMF", "ST"] },
+            { name: "パレデス", power: 7, bestPos: ["CMF"], subPos: [] },
+            { name: "ディバラ", power: 9, bestPos: ["SS", "ST", "AMF"], subPos: ["RWG"] },
+            { name: "コラロフ", power: 8, bestPos: ["LSB", "LWB"], subPos: ["CB"] },
+            { name: "Ｂ・ペレス", power: 6, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
+            { name: "ストロートマン", power: 8, bestPos: ["CMF"], subPos: [] },
+            { name: "ヴェレトゥ", power: 8, bestPos: ["CMF"], subPos: [] },
+            { name: "チェリク", power: 7, bestPos: ["RSB", "CB", "RWB"], subPos: [] },
+            { name: "パトリシオ", power: 7, bestPos: ["GK"], subPos: [] },
+            { name: "ザニオーロ", power: 7, bestPos: ["SS", "RWG", "AMF"], subPos: ["ST"] },
+            { name: "ザレフスキ", power: 6, bestPos: ["LWB", "LMF", "LWG"], subPos: ["LSB", "RWB", "RMF", "SS", "RWG"] },
+            { name: "エイブラハム", power: 8, bestPos: ["ST"], subPos: [] },
+            { name: "ムヒタリアン", power: 9, bestPos: ["CMF", "AMF", "SS"], subPos: ["RMF", "LMF"] },
+            { name: "スヴィラル", power: 9, bestPos: ["GK"], subPos: [] },
+            { name: "エンディカ", power: 8, bestPos: ["CB"], subPos: ["LSB"] },
+            { name: "Ｊ・ジェズス", power: 5, bestPos: ["CB"], subPos: ["LSB"] },
+            { name: "ボーヴェ", power: 6, bestPos: ["CMF"], subPos: [] },
+            { name: "ウンデル", power: 7, bestPos: ["RWG", "RMF", "SS"], subPos: [] },
+            { name: "ショムロドフ", power: 5, bestPos: ["ST"], subPos: [] },
+            { name: "サラー", power: 9, bestPos: ["RWG", "SS"], subPos: ["ST", "RMF"] },
+            { name: "シュチェスニー", power: 8, bestPos: ["GK"], subPos: [] },
+            { name: "カスタン", power: 8, bestPos: ["CB"], subPos: [] },
+            { name: "アンヘリーニョ", power: 8, bestPos: ["LSB", "LWB"], subPos: ["CB"] },
+            { name: "パウ・ロペス", power: 7, bestPos: ["GK"], subPos: [] },
+            { name: "Ｃ・ペレス", power: 5, bestPos: ["SS", "RWG"], subPos: ["RMF"] },
+            { name: "リュディガー", power: 8, bestPos: ["CB"], subPos: ["RSB"] },
+            { name: "コネ", power: 8, bestPos: ["CMF"], subPos: [] },
+            { name: "バルダンツィ", power: 6, bestPos: ["AMF", "SS"], subPos: ["RMF", "RWG"] },
+            { name: "クンブラ", power: 5, bestPos: ["CB"], subPos: [] },
+            { name: "クライファート", power: 6, bestPos: ["AMF", "LWG", "SS"], subPos: ["LMF", "RMF", "RWG", "ST"] },
+            { name: "イトゥルベ", power: 5, bestPos: ["RWG", "SS"], subPos: ["ST", "RMF", "LWG"] },
+            { name: "ベロッティ", power: 5, bestPos: ["ST"], subPos: [] },
+            { name: "スーレ", power: 8, bestPos: ["SS", "RWG", "RMF"], subPos: ["RWB", "ST"] },
+            { name: "ディアワラ", power: 5, bestPos: ["CMF"], subPos: [] },
+            { name: "アリソン", power: 9, bestPos: ["GK"], subPos: [] },
+            { name: "ビジャール", power: 6, bestPos: ["CMF"], subPos: [] },
+            { name: "ドフビク", power: 7, bestPos: ["ST"], subPos: [] },
+            { name: "シック", power: 6, bestPos: ["ST"], subPos: ["SS", "RWG"] },
+            { name: "ピジッリ", power: 6, bestPos: ["CMF"], subPos: ["AMF"] },
+            { name: "マジョラル", power: 7, bestPos: ["ST"], subPos: [] },
+            { name: "ジョレンテ", power: 7, bestPos: ["CB"], subPos: [] },
+            { name: "サントン", power: 5, bestPos: ["RSB", "LSB", "RWB", "LWB"], subPos: [] },
+            { name: "マティッチ", power: 8, bestPos: ["CMF"], subPos: [] },
+            { name: "ルカク", power: 8, bestPos: ["ST"], subPos: [] },
+            { name: "エメルソン・Ｐ", power: 7, bestPos: ["LSB", "LWB"], subPos: [] },
+            { name: "ビーニャ", power: 5, bestPos: ["LSB", "LWB"], subPos: ["CB"] },
+            { name: "ジェルソン", power: 5, bestPos: ["CMF", "AMF"], subPos: ["SS", "RWG", "RMF"] },
+            { name: "ペドロ", power: 6, bestPos: ["RWG", "SS", "RMF"], subPos: ["LMF", "LWG", "AMF", "ST"] },
+            { name: "エンゾンジ", power: 6, bestPos: ["CMF"], subPos: [] },
+            { name: "パストーレ", power: 6, bestPos: ["AMF", "SS"], subPos: ["CMF", "RWG", "LWG", "RMF", "LMF"] },
+            { name: "レンシュ", power: 6, bestPos: ["RSB", "RWB"], subPos: ["CB", "LSB", "LWB"] },
+            { name: "オルセン", power: 5, bestPos: ["GK"], subPos: [] },
+            { name: "ミランテ", power: 6, bestPos: ["GK"], subPos: [] },
+            { name: "エルモソ", power: 7, bestPos: ["CB"], subPos: ["LSB"] },
+            { name: "クリステンセン", power: 5, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
+            { name: "サーレマーケルス", power: 7, bestPos: ["RMF", "RWB", "LMF"], subPos: ["RSB", "RWG", "LWB", "LWG", "SS", "AMF"] },
+            { name: "アズムン", power: 5, bestPos: ["ST"], subPos: [] },
+            { name: "ロボンツ", power: 5, bestPos: ["GK"], subPos: [] },
+            { name: "アワール", power: 5, bestPos: ["AMF", "CMF"], subPos: ["SS"] },
+            { name: "ウェズレイ", power: 8, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
+            { name: "ゴナロン", power: 5, bestPos: ["CMF"], subPos: [] },
+            { name: "ワイナルドゥム", power: 6, bestPos: ["CMF", "AMF", "SS"], subPos: [] },
+            { name: "Ｓ・オリベイラ", power: 6, bestPos: ["CMF", "AMF"], subPos: [] },
+            { name: "アフェナ＝ギャン", power: 3, bestPos: ["ST", "SS"], subPos: ["LWG"] },
+            { name: "ファーガソン", power: 6, bestPos: ["ST"], subPos: [] },
+            { name: "カマラ", power: 5, bestPos: ["CMF"], subPos: [] },
+            { name: "フンメルス", power: 6, bestPos: ["CB"], subPos: [] },
+            { name: "デフレル", power: 4, bestPos: ["ST"], subPos: ["SS", "RWG"] },
+            { name: "カリニッチ", power: 6, bestPos: ["ST"], subPos: [] },
+            { name: "エル・アイナウイ", power: 7, bestPos: ["CMF"], subPos: ["AMF"] },
+            { name: "カラフィオーリ", power: 5, bestPos: ["CB", "LSB"], subPos: ["LWB"] },
+            { name: "スコルプスキ", power: 5, bestPos: ["GK"], subPos: [] },
+            { name: "ツィミカス", power: 5, bestPos: ["LSB", "LWB"], subPos: [] },
+            { name: "ソルバッケン", power: 4, bestPos: ["RWG", "SS"], subPos: ["RMF", "LWG"] },
+            { name: "ハイセン", power: 7, bestPos: ["CB"], subPos: [] },
+            { name: "ヴォルパート", power: 4, bestPos: ["SS", "AMF", "RWG"], subPos: ["RMF"] },
+            { name: "マルカノ", power: 5, bestPos: ["CB", "LSB"], subPos: [] },
+            { name: "ジョウコフスキ", power: 5, bestPos: ["CB"], subPos: [] },
+            { name: "タヒロビッチ", power: 4, bestPos: ["CMF"], subPos: ["AMF"] },
+            { name: "Ｍ＝ナイルズ", power: 5, bestPos: ["RSB", "RWB"], subPos: ["CMF", "LSB", "LWB", "RMF"] },
+            { name: "フェルマーレン", power: 5, bestPos: ["CB", "LSB"], subPos: [] },
+            { name: "Ｒ・サンチェス", power: 5, bestPos: ["CMF"], subPos: ["RMF", "AMF"] },
+            { name: "ダルボエ", power: 5, bestPos: ["CMF"], subPos: [] },
+            { name: "ベイリー", power: 6, bestPos: ["RWG", "SS"], subPos: ["RMF", "LMF", "LWG"] },
+            { name: "ル・フェー", power: 5, bestPos: ["CMF"], subPos: ["AMF", "LMF"] },
+            { name: "マリオ・ルイ", power: 6, bestPos: ["LSB", "LWB"], subPos: [] },
+            { name: "ギラルディ", power: 5, bestPos: ["CB"], subPos: [] },
+            { name: "ザッパコスタ", power: 5, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB", "RMF", "LMF"] },
+            { name: "フザート", power: 4, bestPos: ["GK"], subPos: [] },
+            { name: "アブドゥルハミド", power: 3, bestPos: ["RWB", "RSB"], subPos: [] },
+            { name: "レイノルズ", power: 3, bestPos: ["RWB", "RSB"], subPos: [] },
+            { name: "アントヌッチ", power: 3, bestPos: ["AMF", "SS", "LWG", "RWG"], subPos: ["ST", "LMF", "RMF"] },
+            { name: "パガーノ", power: 2, bestPos: ["CMF", "AMF"], subPos: ["SS"] },
+            { name: "モレノ", power: 5, bestPos: ["CB", "LSB"], subPos: [] },
+            { name: "チェティン", power: 3, bestPos: ["CB"], subPos: [] },
+            { name: "グルナ＝ドゥアト", power: 4, bestPos: ["CMF"], subPos: [] },
+            { name: "グルニエ", power: 4, bestPos: ["CMF", "AMF"], subPos: [] },
+            { name: "ネルソン", power: 4, bestPos: ["CB"], subPos: [] },
+            { name: "サラー＝エディン", power: 4, bestPos: ["LSB", "LWB"], subPos: [] },
+            { name: "ダール", power: 4, bestPos: ["LSB", "LWB"], subPos: [] },
+            { name: "チョリッチ", power: 3, bestPos: ["CMF", "AMF"], subPos: ["SS"] },
+            { name: "ボエル", power: 2, bestPos: ["GK"], subPos: [] },
+            { name: "マレン", power: 7, bestPos: ["ST"], subPos: ["SS", "RWG", "LWG"] },
+            { name: "アレーナ", power: 2, bestPos: ["ST"], subPos: [] },
+            { name: "ヴァズ", power: 5, bestPos: ["ST"], subPos: [] }
+        ];
+
+        let currentFormation = "4-3-2-1", currentPlayers = [];
+        let activeEl = null, activeIdx = null, firstTapIdx = null, startX, startY, isDragging = false;
+
+        const formations = {
+            "4-3-2-1": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [30,50],[50,53],[70,50], [38,30],[62,30], [50,10]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","SS","SS","ST"] },
+            "4-3-3":   { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [25,44],[50,50],[75,44], [20,25],[50,10],[80,25]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","LWG","ST","RWG"] },
+            "3-4-2-1": { coords: [[50,90], [25,72],[50,72],[75,72], [12,50],[38,53],[62,53],[88,50], [35,30],[65,30], [50,10]], roles: ["GK","CB","CB","CB","LWB","CMF","CMF","RWB","SS","SS","ST"] },
+            "3-4-1-2": { coords: [[50,90], [25,72],[50,72],[75,72], [12,50],[38,53],[62,53],[88,50], [50,32], [38,12],[62,12]], roles: ["GK","CB","CB","CB","LMF","CMF","CMF","RMF","AMF","ST","ST"] },
+            "4-4-2":   { coords: [[50,90], [15,65],[38,67],[62,67],[85,65], [12,42],[38,42],[62,42],[88,42], [38,15],[62,15]], roles: ["GK","LSB","CB","CB","RSB","LMF","CMF","CMF","RMF","ST","ST"] },
+            "3-5-2":   { coords: [[50,90], [25,72],[50,72],[75,72], [12,42],[32,38],[50,48],[68,38],[88,42], [38,15],[62,15]], roles: ["GK","CB","CB","CB","LWB","CMF","CMF","CMF","RWB","ST","ST"] },
+            "4-2-3-1": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [38,50],[62,50], [20,32],[50,32],[80,32], [50,10]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","LWG","AMF","RWG","ST"] },
+            "4-3-1-2": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [50,58],[30,48],[70,48], [50,32], [38,12],[62,12]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","AMF","ST","ST"] }
+        };
+
+        async function startGacha() {
+            document.getElementById("startBtn").style.display = "none";
+            const container = document.getElementById("gacha-container"), counter = document.getElementById("gacha-count"), overlay = document.getElementById("fade-overlay");
+            currentPlayers = []; let pool = JSON.parse(JSON.stringify(fpDatabase));
+            for(let i=0; i<14; i++) {
+                let subPool = i === 1 ? pool.filter(p => p.bestPos.includes("GK")) : pool.filter(p => !p.bestPos.includes("GK"));
+                const chosen = subPool[Math.floor(Math.random() * subPool.length)];
+                currentPlayers.push(chosen); pool = pool.filter(p => p.name !== chosen.name);
+            }
+            const gkIdx = currentPlayers.findIndex(p => p.bestPos.includes("GK"));
+            if (gkIdx !== -1) [currentPlayers[0], currentPlayers[gkIdx]] = [currentPlayers[gkIdx], currentPlayers[0]];
+            for (let i = 0; i < 14; i++) {
+                container.innerHTML = `<div class="flip-card"><div class="flip-card-inner"><div class="card-front"><div class="gacha-icon"></div><div class="gacha-name">${currentPlayers[i].name}</div></div></div></div>`;
+                counter.innerText = `${i+1} / 14`; await new Promise(r => setTimeout(r, 1000));
+            }
+            overlay.style.opacity = "1"; await new Promise(r => setTimeout(r, 1000));
+            document.getElementById("gacha-screen").style.display = "none"; document.getElementById("pitch-screen").style.display = "flex";
+            initNav(); updateFormation(); overlay.style.opacity = "0";
+        }
+
+        function updateFormation(sparkIndices = []) {
+            const pitch = document.getElementById("pitch-area"), bench = document.getElementById("bench-area");
+            pitch.innerHTML = ""; bench.innerHTML = ""; const config = formations[currentFormation];
+            currentPlayers.forEach((p, i) => {
+                const picto = createPicto(p, i);
+                if (i < 11) { picto.style.left = config.coords[i][0] + "%"; picto.style.top = config.coords[i][1] + "%"; pitch.appendChild(picto); } 
+                else { let subLeft = i === 11 ? 22 : (i === 12 ? 50 : 78); picto.style.left = subLeft + "%"; picto.style.top = "50%"; bench.appendChild(picto); }
+            });
+            requestAnimationFrame(() => {
+                sparkIndices.forEach(idx => {
+                    const allPictos = [...document.getElementById("pitch-area").children, ...document.getElementById("bench-area").children];
+                    const targetPicto = allPictos[idx];
+                    if (targetPicto) { const rect = targetPicto.getBoundingClientRect(); triggerSpark(rect.left + rect.width / 2, rect.top + rect.height / 2); }
+                });
+            });
+        }
+
+        function createPicto(p, index) {
+            const div = document.createElement("div"); div.className = `player-picto`;
+            if (firstTapIdx === index) div.classList.add('tap-selected');
+            div.innerHTML = `<div class="picto-head"></div><div class="picto-body"></div><div class="picto-name">${p.name}</div>`;
+            const onStart = (e) => { const evt = e.touches ? e.touches[0] : e; activeEl = div; activeIdx = index; startX = evt.clientX; startY = evt.clientY; isDragging = false; };
+            div.addEventListener('mousedown', onStart); div.addEventListener('touchstart', onStart, {passive: false}); return div;
+        }
+
+        const onMove = (e) => {
+            if (!activeEl) return; const evt = e.touches ? e.touches[0] : e;
+            const dx = evt.clientX - startX, dy = evt.clientY - startY;
+            if (Math.hypot(dx, dy) > 5) { if (!isDragging) { isDragging = true; activeEl.classList.add('dragging'); } activeEl.style.transform = `translate(${dx}px, ${dy}px)`; }
+        };
+
+        const onEnd = (e) => {
+            if (!activeEl) return; const evt = e.changedTouches ? e.changedTouches[0] : e; let changedIndices = [];
+            if (!isDragging) {
+                if (firstTapIdx === null) firstTapIdx = activeIdx;
+                else if (firstTapIdx === activeIdx) firstTapIdx = null;
+                else { [currentPlayers[firstTapIdx], currentPlayers[activeIdx]] = [currentPlayers[activeIdx], currentPlayers[firstTapIdx]]; changedIndices = [firstTapIdx, activeIdx]; firstTapIdx = null; }
+            } else {
+                activeEl.classList.remove('dragging'); activeEl.style.display = "none";
+                const target = document.elementFromPoint(evt.clientX, evt.clientY)?.closest('.player-picto'); activeEl.style.display = "";
+                if (target) {
+                    const allPictos = [...document.getElementById("pitch-area").children, ...document.getElementById("bench-area").children];
+                    const tIdx = allPictos.indexOf(target);
+                    if (tIdx !== -1 && tIdx !== activeIdx) { [currentPlayers[activeIdx], currentPlayers[tIdx]] = [currentPlayers[tIdx], currentPlayers[activeIdx]]; changedIndices = [activeIdx, tIdx]; }
+                }
+                firstTapIdx = null;
+            }
+            activeEl.style.transform = ""; activeEl = null; updateFormation(changedIndices);
+        };
+
+        window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove, {passive: false});
+        window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
+
+        function initNav() {
+            const nav = document.getElementById("form-nav"); nav.innerHTML = "";
+            Object.keys(formations).forEach(key => {
+                const btn = document.createElement("button"); btn.className = `form-btn ${key === currentFormation ? 'active' : ''}`; btn.innerText = key;
+                btn.onclick = () => { currentFormation = key; initNav(); updateFormation(); }; nav.appendChild(btn);
+            });
+        }
+
+        document.getElementById("analyzeBtn").onclick = () => {
+            const scoreDisp = document.getElementById("power-score"); scoreDisp.style.display = "block";
+            const config = formations[currentFormation];
+            let totalPower = 0;
+            for(let i=0; i<11; i++) {
+                const p = currentPlayers[i]; const role = config.roles[i]; totalPower += p.power;
+                if (!p.bestPos.includes(role)) { if (p.subPos.includes(role)) totalPower -= 2; else totalPower -= 5; }
+            }
+            const finalScore = Math.max(0, Math.min(100, totalPower));
+            let startTime = null;
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                if (timestamp - startTime < 1200) { scoreDisp.innerText = Math.floor(Math.random() * 100); requestAnimationFrame(animate); }
+                else { scoreDisp.innerText = finalScore; scoreDisp.style.color = (finalScore >= 95) ? "#fff" : "var(--roma-gold)"; }
+            }
+            requestAnimationFrame(animate);
+        };
+
+        document.getElementById("saveBtn").onclick = () => {
+            html2canvas(document.getElementById("capture-area"), { scale: 2, backgroundColor: "#000" }).then(c => {
+                const a = document.createElement("a"); a.download = "roma_squad.png"; a.href = c.toDataURL(); a.click();
+            });
+        };
+        document.getElementById("startBtn").onclick = startGacha;
+        function triggerSpark(x, y) {
+            const spark = document.createElement("div"); spark.className = "spark"; spark.style.left = x + "px"; spark.style.top = y + "px";
+            document.body.appendChild(spark); setTimeout(() => spark.remove(), 300);
+        }
+    </script>
+</body>
+</html>
