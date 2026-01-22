@@ -11,19 +11,21 @@
         * { user-select: none !important; -webkit-user-select: none !important; margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: white; height: 100vh; font-family: 'Exo 2', 'Noto Sans JP', sans-serif; overflow: hidden; touch-action: none; }
         #fade-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
+        
+        /* スカウト画面 */
         #gacha-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #333 0%, #000 100%); }
         #gacha-container { position: relative; width: 220px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
         
-        /* カード演出の修正: 正面から飛び出し & 透過角丸 */
+        /* カード演出: 正面ホバー & 角丸透過 */
         .flip-card { 
             width: 200px; height: 270px; 
             perspective: 1000px;
-            background: transparent; /* ここを透明に */
+            background: transparent; 
         }
         .flip-card-inner { 
             position: relative; width: 100%; height: 100%; text-align: center; 
             animation: gacha-reveal 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; 
-            border-radius: 12px; /* 親にも角丸 */
+            border-radius: 12px;
             overflow: hidden;
         }
         @keyframes gacha-reveal { 
@@ -31,8 +33,6 @@
             60% { transform: scale(1.05) translateY(-10px); opacity: 1; filter: brightness(1.5); box-shadow: 0 0 50px rgba(240, 188, 66, 0.8); }
             100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1); box-shadow: 0 0 30px rgba(240, 188, 66, 0.5); }
         }
-
-        /* カードの塗りつぶしがはみ出さないように修正 */
         .card-front { 
             width: 100%; height: 100%; 
             background: var(--roma-red); 
@@ -42,10 +42,10 @@
             position: relative;
             overflow: hidden;
         }
-        
         .gacha-icon { width: 90px; height: 90px; background: #fff; clip-path: polygon(20% 10%, 35% 0%, 65% 0%, 80% 10%, 100% 20%, 85% 45%, 75% 40%, 75% 100%, 25% 100%, 25% 40%, 15% 45%, 0% 20%); position: absolute; top: 50px; }
         .gacha-name { font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.8); width: 100%; text-align: center; padding: 12px 0; border-radius: 0 0 9px 9px; z-index: 2; }
         
+        /* ピッチ画面 */
         #pitch-screen { display: none; height: 100vh; flex-direction: column; align-items: center; padding-top: 5px; }
         #capture-area { background: #000; padding: 5px; display: flex; flex-direction: column; align-items: center; width: 360px; box-sizing: border-box; }
         .squad-title { font-size: 14px; color: var(--roma-gold); font-style: italic; margin-bottom: 5px; letter-spacing: 2px; }
@@ -256,7 +256,7 @@
                     container.innerHTML = `<div class="flip-card"><div class="flip-card-inner"><div class="card-front"><div class="gacha-icon"></div><div class="gacha-name">${currentPlayers[gIdx].name}</div></div></div></div>`;
                     counter.innerText = `${gIdx + 1} / 14`;
                     gIdx++;
-                    setTimeout(showNextCard, 1400); // アニメが1.2秒なので、少し余裕を持って次へ
+                    setTimeout(showNextCard, 1400); // アニメ1.2s + 静止0.2s
                 } else {
                     setTimeout(transitionToPitch, 800);
                 }
@@ -356,20 +356,20 @@
             const timer = setInterval(() => {
                 scoreDisp.innerText = Math.floor(Math.random() * 100);
                 count++;
-                if (count > 15) {
+                if (count > 22) { // 所要時間を約0.2秒延長
                     clearInterval(timer);
                     scoreDisp.innerText = currentScore;
                     scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)";
                     document.getElementById("saveBtn").style.display = "block";
                     document.getElementById("shareBtn").style.display = "block";
                 }
-            }, 50);
+            }, 60);
         };
 
         document.getElementById("shareBtn").onclick = () => {
             const emojiMap = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
             const scoreEmoji = String(currentScore).split('').map(num => emojiMap[parseInt(num)]).join('');
-            const currentUrl = window.location.href; // 現在のURLを取得
+            const currentUrl = window.location.href;
             const text = encodeURIComponent(`ローマのイレブンを組んでみた！\n戦闘力：${scoreEmoji}\n\n${currentUrl}\n#ASRoma #RomaTactics\n`);
             window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
         };
