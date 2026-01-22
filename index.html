@@ -184,7 +184,7 @@
             { name: "モレノ", power: 6, bestPos: ["CB", "LSB"], subPos: [] },
             { name: "チェティン", power: 4, bestPos: ["CB"], subPos: [] },
             { name: "グルナ＝ドゥアト", power: 5, bestPos: ["CMF"], subPos: [] },
-            { name: "グルニエ", power: 5,ベストPos: ["CMF", "AMF"], subPos: [] },
+            { name: "グルニエ", power: 5, bestPos: ["CMF", "AMF"], subPos: [] },
             { name: "ネルソン", power: 5, bestPos: ["CB"], subPos: [] },
             { name: "サラー＝エディン", power: 5, bestPos: ["LSB", "LWB"], subPos: [] },
             { name: "ダール", power: 5, bestPos: ["LSB", "LWB"], subPos: [] },
@@ -315,7 +315,7 @@
         document.getElementById("shareBtn").onclick = () => {
             const emojiMap = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
             const scoreEmoji = String(currentScore).split('').map(num => emojiMap[parseInt(num)]).join('');
-            const text = encodeURIComponent(`ローマのイレブンを組んでみた\n戦闘力：${scoreEmoji}\n\n#ASRoma #RomaTactics\n`);
+            const text = encodeURIComponent(`ローマのイレブンを組んでみた！\n戦闘力：${scoreEmoji}\n\n#ASRoma #RomaTactics\n`);
             const url = encodeURIComponent(window.location.href);
             window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
         };
