@@ -8,14 +8,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --roma-red: #8E1F2F; --roma-gold: #F0BC42; --bg-dark: #1a1a1a; --bg-light: #2a2a2a; }
-        * { user-select: none !important; -webkit-user-select: none !important; -webkit-touch-callout: none !important; margin: 0; padding: 0; box-sizing: border-box; }
+        * { user-select: none !important; -webkit-user-select: none !important; margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: white; height: 100vh; font-family: 'Exo 2', 'Noto Sans JP', sans-serif; overflow: hidden; touch-action: none; }
-        #fade-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.8s ease-in-out; }
+        #fade-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s; }
         #gacha-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #333 0%, #000 100%); }
         #gacha-container { position: relative; width: 220px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
         .flip-card { width: 200px; height: 270px; perspective: 1000px; }
         .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; animation: gacha-spin 0.8s ease-out forwards; }
-        @keyframes gacha-spin { 0% { transform: rotateY(0deg) scale(0.5); opacity: 0; } 70% { transform: rotateY(720deg) scale(1.1); opacity: 1; } 100% { transform: rotateY(720deg) scale(1); opacity: 1; } }
+        @keyframes gacha-spin { 0% { transform: rotateY(0deg) scale(0.5); opacity: 0; } 100% { transform: rotateY(720deg) scale(1); opacity: 1; } }
         .card-front { width: 100%; height: 100%; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; background: var(--roma-red); border: 3px solid var(--roma-gold); overflow: hidden; }
         .gacha-icon { width: 90px; height: 90px; background: #fff; clip-path: polygon(20% 10%, 35% 0%, 65% 0%, 80% 10%, 100% 20%, 85% 45%, 75% 40%, 75% 100%, 25% 100%, 25% 40%, 15% 45%, 0% 20%); position: absolute; top: 50px; }
         .gacha-name { font-size: 20px; font-weight: 900; background: rgba(0,0,0,0.8); width: 100%; text-align: center; padding: 12px 0; border-radius: 0 0 10px 10px; }
@@ -26,7 +26,7 @@
         .form-btn { padding: 8px 0; font-size: 11px; font-weight: 900; color: #777; border-radius: 4px; border: none; background: #222; cursor: pointer; }
         .form-btn.active { background: var(--roma-gold); color: #000; }
         .pitch { width: 340px; height: 370px; border: 2px solid #444; position: relative; border-radius: 8px; background: var(--bg-dark); background-image: repeating-linear-gradient(0deg, var(--bg-light) 0, var(--bg-light) 37px, var(--bg-dark) 37px, var(--bg-dark) 74px); }
-        .player-picto { position: absolute; width: 50px; height: 65px; margin-left: -25px; margin-top: -32px; display: flex; flex-direction: column; align-items: center; z-index: 20; transition: transform 0.2s; }
+        .player-picto { position: absolute; width: 50px; height: 65px; margin-left: -25px; margin-top: -32px; display: flex; flex-direction: column; align-items: center; z-index: 20; }
         .picto-head { width: 16px; height: 16px; border-radius: 50%; margin-bottom: 2px; background: var(--roma-red); border: 1px solid rgba(255,255,255,0.1); }
         .picto-body { width: 22px; height: 20px; border-radius: 2px; background: var(--roma-red); border: 1px solid rgba(255,255,255,0.1); }
         .picto-name { font-size: 10px; font-weight: 900; margin-top: 3px; text-align: center; white-space: nowrap; text-shadow: 2px 2px 4px #000; }
@@ -37,7 +37,7 @@
         .bench-wrapper { width: 340px; height: 75px; position: relative; border-top: 1px solid #333; }
         .bench-container { position: relative; width: 100%; height: 100%; }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 340px; margin-top: 10px; }
-        .gacha-btn { padding: 14px 5px; background: var(--roma-gold); font-weight: 900; border-radius: 50px; border: none; color: #000; font-size: 14px; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; }
+        .gacha-btn { padding: 14px 5px; background: var(--roma-gold); font-weight: 900; border-radius: 50px; border: none; color: #000; font-size: 14px; cursor: pointer; text-align: center; }
         #analyzeBtn { grid-column: span 2; }
         #saveBtn { background: #fff; display: none; }
         #shareBtn { background: #000; color: #fff; border: 1px solid #444; display: none; }
@@ -96,7 +96,7 @@
             { name: "コラロフ", power: 9, bestPos: ["LSB", "LWB"], subPos: ["CB"] },
             { name: "Ｂ・ペレス", power: 7, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
             { name: "ストロートマン", power: 9, bestPos: ["CMF"], subPos: [] },
-            { name: "ヴェレトゥ", power: 9, bestPos: ["CMF"], subPos: [] },
+            { name: "ヴェレトゥ", power: 9,ベストPos: ["CMF"], subPos: [] },
             { name: "チェリク", power: 8, bestPos: ["RSB", "CB", "RWB"], subPos: [] },
             { name: "パトリシオ", power: 8, bestPos: ["GK"], subPos: [] },
             { name: "ザニオーロ", power: 8, bestPos: ["SS", "RWG", "AMF"], subPos: ["ST"] },
@@ -142,7 +142,7 @@
             { name: "パストーレ", power: 7, bestPos: ["AMF", "SS"], subPos: ["CMF", "RWG", "LWG", "RMF", "LMF"] },
             { name: "レンシュ", power: 7, bestPos: ["RSB", "RWB"], subPos: ["CB", "LSB", "LWB"] },
             { name: "オルセン", power: 6, bestPos: ["GK"], subPos: [] },
-            { name: "ミランテ", power: 7,ベストPos: ["GK"], subPos: [] },
+            { name: "ミランテ", power: 7, bestPos: ["GK"], subPos: [] },
             { name: "エルモソ", power: 8, bestPos: ["CB"], subPos: ["LSB"] },
             { name: "クリステンセン", power: 6, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
             { name: "サーレマーケルス", power: 8, bestPos: ["RMF", "RWB", "LMF"], subPos: ["RSB", "RWG", "LWB", "LWG", "SS", "AMF"] },
@@ -204,36 +204,27 @@
             "4-3-2-1": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [30,50],[50,53],[70,50], [38,30],[62,30], [50,10]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","SS","SS","ST"] },
             "4-3-3":   { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [25,44],[50,50],[75,44], [20,25],[50,10],[80,25]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","LWG","ST","RWG"] },
             "3-4-2-1": { coords: [[50,90], [25,72],[50,72],[75,72], [12,50],[38,53],[62,53],[88,50], [35,30],[65,30], [50,10]], roles: ["GK","CB","CB","CB","LWB","CMF","CMF","RWB","SS","SS","ST"] },
-            "3-4-1-2": { coords: [[50,90], [25,72],[50,72],[75,72], [12,50],[38,53],[62,53],[88,50], [50,32], [38,12],[62,12]], roles: ["GK","CB","CB","CB","LMF","CMF","CMF","RMF","AMF","ST","ST"] },
             "4-4-2":   { coords: [[50,90], [15,65],[38,67],[62,67],[85,65], [12,42],[38,42],[62,42],[88,42], [38,15],[62,15]], roles: ["GK","LSB","CB","CB","RSB","LMF","CMF","CMF","RMF","ST","ST"] },
             "3-5-2":   { coords: [[50,90], [25,72],[50,72],[75,72], [12,42],[32,38],[50,48],[68,38],[88,42], [38,15],[62,15]], roles: ["GK","CB","CB","CB","LWB","CMF","CMF","CMF","RWB","ST","ST"] },
             "4-2-3-1": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [38,50],[62,50], [20,32],[50,32],[80,32], [50,10]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","LWG","AMF","RWG","ST"] },
             "4-3-1-2": { coords: [[50,90], [15,70],[38,72],[62,72],[85,70], [50,58],[30,48],[70,48], [50,32], [38,12],[62,12]], roles: ["GK","LSB","CB","CB","RSB","CMF","CMF","CMF","AMF","ST","ST"] }
         };
 
-        // スカウト処理のスマホ最適化
         function startGacha() {
             document.getElementById("startBtn").style.display = "none";
             const container = document.getElementById("gacha-container"), counter = document.getElementById("gacha-count");
             currentPlayers = []; let pool = [...fpDatabase];
             for(let i=0; i<14; i++) {
-                let subPool = i === 1 ? pool.filter(p => p.bestPos.includes("GK")) : pool.filter(p => !p.bestPos.includes("GK"));
+                let subPool = i === 0 ? pool.filter(p => p.bestPos.includes("GK")) : pool.filter(p => !p.bestPos.includes("GK"));
                 const chosen = subPool[Math.floor(Math.random() * subPool.length)];
                 currentPlayers.push(chosen); pool = pool.filter(p => p.name !== chosen.name);
             }
-            const gkIdx = currentPlayers.findIndex(p => p.bestPos.includes("GK"));
-            if (gkIdx !== -1) [currentPlayers[0], currentPlayers[gkIdx]] = [currentPlayers[gkIdx], currentPlayers[0]];
-
             let gIdx = 0;
             const interval = setInterval(() => {
                 container.innerHTML = `<div class="flip-card"><div class="flip-card-inner"><div class="card-front"><div class="gacha-icon"></div><div class="gacha-name">${currentPlayers[gIdx].name}</div></div></div></div>`;
-                counter.innerText = `${gIdx + 1} / 14`;
-                gIdx++;
-                if (gIdx >= 14) {
-                    clearInterval(interval);
-                    setTimeout(transitionToPitch, 1200);
-                }
-            }, 900); // 1秒弱の間隔で確実に回す
+                counter.innerText = `${gIdx + 1} / 14`; gIdx++;
+                if (gIdx >= 14) { clearInterval(interval); setTimeout(transitionToPitch, 1000); }
+            }, 800);
         }
 
         function transitionToPitch() {
@@ -242,9 +233,8 @@
             setTimeout(() => {
                 document.getElementById("gacha-screen").style.display = "none";
                 document.getElementById("pitch-screen").style.display = "flex";
-                initNav(); updateFormation();
-                overlay.style.opacity = "0";
-            }, 800);
+                initNav(); updateFormation(); overlay.style.opacity = "0";
+            }, 600);
         }
 
         function updateFormation(sparkIndices = []) {
@@ -256,9 +246,8 @@
                 else { let subLeft = i === 11 ? 22 : (i === 12 ? 50 : 78); picto.style.left = subLeft + "%"; picto.style.top = "50%"; bench.appendChild(picto); }
             });
             sparkIndices.forEach(idx => {
-                const allPictos = [...pitch.children, ...bench.children];
-                const targetPicto = allPictos[idx];
-                if (targetPicto) { const rect = targetPicto.getBoundingClientRect(); triggerSpark(rect.left + rect.width / 2, rect.top + rect.height / 2); }
+                const all = [...pitch.children, ...bench.children];
+                if (all[idx]) { const r = all[idx].getBoundingClientRect(); triggerSpark(r.left + r.width/2, r.top + r.height/2); }
             });
         }
 
@@ -266,28 +255,40 @@
             const div = document.createElement("div"); div.className = `player-picto`;
             if (firstTapIdx === index) div.classList.add('tap-selected');
             div.innerHTML = `<div class="picto-head"></div><div class="picto-body"></div><div class="picto-name">${p.name}</div>`;
-            const onStart = (e) => { e.preventDefault(); const evt = e.touches ? e.touches[0] : e; activeEl = div; activeIdx = index; startX = evt.clientX; startY = evt.clientY; isDragging = false; };
-            div.addEventListener('mousedown', onStart); div.addEventListener('touchstart', onStart, {passive: false}); return div;
+            const onStart = (e) => {
+                const evt = e.touches ? e.touches[0] : e;
+                activeEl = div; activeIdx = index; startX = evt.clientX; startY = evt.clientY; isDragging = false;
+            };
+            div.addEventListener('mousedown', onStart);
+            div.addEventListener('touchstart', onStart, {passive: false});
+            return div;
         }
 
         const onMove = (e) => {
-            if (!activeEl) return; const evt = e.touches ? e.touches[0] : e;
+            if (!activeEl) return;
+            const evt = e.touches ? e.touches[0] : e;
             const dx = evt.clientX - startX, dy = evt.clientY - startY;
-            if (Math.hypot(dx, dy) > 5) { if (!isDragging) { isDragging = true; activeEl.classList.add('dragging'); } activeEl.style.transform = `translate(${dx}px, ${dy}px)`; }
+            if (Math.hypot(dx, dy) > 5) {
+                if (!isDragging) { isDragging = true; activeEl.classList.add('dragging'); }
+                activeEl.style.transform = `translate(${dx}px, ${dy}px)`;
+            }
         };
 
         const onEnd = (e) => {
-            if (!activeEl) return; const evt = e.changedTouches ? e.changedTouches[0] : e; let changedIndices = [];
+            if (!activeEl) return;
+            const evt = e.changedTouches ? e.changedTouches[0] : e;
+            let changedIndices = [];
             if (!isDragging) {
                 if (firstTapIdx === null) firstTapIdx = activeIdx;
                 else if (firstTapIdx === activeIdx) firstTapIdx = null;
                 else { [currentPlayers[firstTapIdx], currentPlayers[activeIdx]] = [currentPlayers[activeIdx], currentPlayers[firstTapIdx]]; changedIndices = [firstTapIdx, activeIdx]; firstTapIdx = null; }
             } else {
                 activeEl.classList.remove('dragging'); activeEl.style.display = "none";
-                const target = document.elementFromPoint(evt.clientX, evt.clientY)?.closest('.player-picto'); activeEl.style.display = "";
+                const target = document.elementFromPoint(evt.clientX, evt.clientY)?.closest('.player-picto');
+                activeEl.style.display = "";
                 if (target) {
-                    const allPictos = [...document.getElementById("pitch-area").children, ...document.getElementById("bench-area").children];
-                    const tIdx = allPictos.indexOf(target);
+                    const all = [...document.getElementById("pitch-area").children, ...document.getElementById("bench-area").children];
+                    const tIdx = all.indexOf(target);
                     if (tIdx !== -1 && tIdx !== activeIdx) { [currentPlayers[activeIdx], currentPlayers[tIdx]] = [currentPlayers[tIdx], currentPlayers[activeIdx]]; changedIndices = [activeIdx, tIdx]; }
                 }
                 firstTapIdx = null;
@@ -312,20 +313,13 @@
             let totalPower = 0;
             for(let i=0; i<11; i++) {
                 const p = currentPlayers[i]; const role = config.roles[i]; totalPower += p.power;
-                if (!p.bestPos.includes(role)) { if (p.subPos.includes(role)) totalPower -= 2; else totalPower -= 5; }
+                if (!p.bestPos.includes(role)) { if (p.subPos && p.subPos.includes(role)) totalPower -= 2; else totalPower -= 5; }
             }
             currentScore = Math.max(0, Math.min(100, totalPower));
             let count = 0;
             const timer = setInterval(() => {
-                scoreDisp.innerText = Math.floor(Math.random() * 100);
-                count++;
-                if (count > 15) {
-                    clearInterval(timer);
-                    scoreDisp.innerText = currentScore;
-                    scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)";
-                    document.getElementById("saveBtn").style.display = "block";
-                    document.getElementById("shareBtn").style.display = "block";
-                }
+                scoreDisp.innerText = Math.floor(Math.random() * 100); count++;
+                if (count > 12) { clearInterval(timer); scoreDisp.innerText = currentScore; scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)"; document.getElementById("saveBtn").style.display = "block"; document.getElementById("shareBtn").style.display = "block"; }
             }, 80);
         };
 
