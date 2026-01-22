@@ -342,9 +342,13 @@
             });
         }
 
-        document.getElementById("analyzeBtn").onclick = () => {
-            const scoreDisp = document.getElementById("power-score");
+        document.getElementById("analyzeBtn").onclick = () => {const scoreDisp = document.getElementById("power-score");
+            // スコア表示を確実に「見える状態」にしてからスタート
+            scoreDisp.innerText = "0";
             scoreDisp.style.display = "block";
+            scoreDisp.style.opacity = "1";
+            scoreDisp.style.zIndex = "100"; 
+
             const config = formations[currentFormation];
             let totalPower = 0;
             for(let i=0; i<11; i++) {
@@ -352,19 +356,23 @@
                 if (!p.bestPos.includes(role)) { if (p.subPos && p.subPos.includes(role)) totalPower -= 2; else totalPower -= 5; }
             }
             currentScore = Math.max(0, Math.min(100, totalPower));
+            
             let count = 0;
             const timer = setInterval(() => {
                 scoreDisp.innerText = Math.floor(Math.random() * 100);
                 count++;
-                if (count > 22) { // 所要時間を約0.2秒延長
+                if (count > 22) {
                     clearInterval(timer);
                     scoreDisp.innerText = currentScore;
                     scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)";
-                    document.getElementById("saveBtn").style.display = "block";
-                    document.getElementById("shareBtn").style.display = "block";
+                    
+                    // iOS対策：ボタン表示をワンテンポ遅らせて、数字の描画を優先させる
+                    setTimeout(() => {
+                        document.getElementById("saveBtn").style.display = "block";
+                        document.getElementById("shareBtn").style.display = "block";
+                    }, 100);
                 }
-            }, 60);
-        };
+            }, 60);};
 
         document.getElementById("shareBtn").onclick = () => {
             const emojiMap = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
@@ -388,4 +396,3 @@
     </script>
 </body>
 </html>
-
