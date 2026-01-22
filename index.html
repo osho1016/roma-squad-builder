@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ROMA TACTICS - ULTRA SQUAD</title>
+    <title>ROMA TACTICS</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@900&family=Noto+Sans+JP:wght@900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -96,7 +96,7 @@
             { name: "コラロフ", power: 9, bestPos: ["LSB", "LWB"], subPos: ["CB"] },
             { name: "Ｂ・ペレス", power: 7, bestPos: ["RSB", "RWB"], subPos: ["LSB", "LWB"] },
             { name: "ストロートマン", power: 9, bestPos: ["CMF"], subPos: [] },
-            { name: "ヴェレトゥ", power: 9,ベストPos: ["CMF"], subPos: [] },
+            { name: "ヴェレトゥ", power: 9, bestPos: ["CMF"], subPos: [] },
             { name: "チェリク", power: 8, bestPos: ["RSB", "CB", "RWB"], subPos: [] },
             { name: "パトリシオ", power: 8, bestPos: ["GK"], subPos: [] },
             { name: "ザニオーロ", power: 8, bestPos: ["SS", "RWG", "AMF"], subPos: ["ST"] },
@@ -211,19 +211,35 @@
         };
 
         function startGacha() {
-            document.getElementById("startBtn").style.display = "none";
-            const container = document.getElementById("gacha-container"), counter = document.getElementById("gacha-count");
-            currentPlayers = []; let pool = [...fpDatabase];
+            const startBtn = document.getElementById("startBtn");
+            if(startBtn) startBtn.style.display = "none";
+            
+            currentPlayers = []; 
+            let pool = [...fpDatabase];
+            
+            // 14人選出
             for(let i=0; i<14; i++) {
-                let subPool = i === 0 ? pool.filter(p => p.bestPos.includes("GK")) : pool.filter(p => !p.bestPos.includes("GK"));
-                const chosen = subPool[Math.floor(Math.random() * subPool.length)];
-                currentPlayers.push(chosen); pool = pool.filter(p => p.name !== chosen.name);
+                let subPool = (i === 0) ? pool.filter(p => p.bestPos.includes("GK")) : pool.filter(p => !p.bestPos.includes("GK"));
+                if(subPool.length === 0) subPool = pool;
+                const chosenIdx = Math.floor(Math.random() * subPool.length);
+                const chosen = subPool[chosenIdx];
+                currentPlayers.push(chosen);
+                pool = pool.filter(p => p.name !== chosen.name);
             }
+            
             let gIdx = 0;
+            const container = document.getElementById("gacha-container");
+            const counter = document.getElementById("gacha-count");
+            
             const interval = setInterval(() => {
-                container.innerHTML = `<div class="flip-card"><div class="flip-card-inner"><div class="card-front"><div class="gacha-icon"></div><div class="gacha-name">${currentPlayers[gIdx].name}</div></div></div></div>`;
-                counter.innerText = `${gIdx + 1} / 14`; gIdx++;
-                if (gIdx >= 14) { clearInterval(interval); setTimeout(transitionToPitch, 1000); }
+                if (gIdx < 14) {
+                    container.innerHTML = `<div class="flip-card"><div class="flip-card-inner"><div class="card-front"><div class="gacha-icon"></div><div class="gacha-name">${currentPlayers[gIdx].name}</div></div></div></div>`;
+                    counter.innerText = `${gIdx + 1} / 14`;
+                    gIdx++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(transitionToPitch, 1000);
+                }
             }, 800);
         }
 
@@ -233,32 +249,59 @@
             setTimeout(() => {
                 document.getElementById("gacha-screen").style.display = "none";
                 document.getElementById("pitch-screen").style.display = "flex";
-                initNav(); updateFormation(); overlay.style.opacity = "0";
+                initNav(); 
+                updateFormation(); 
+                overlay.style.opacity = "0";
             }, 600);
         }
 
         function updateFormation(sparkIndices = []) {
-            const pitch = document.getElementById("pitch-area"), bench = document.getElementById("bench-area");
-            pitch.innerHTML = ""; bench.innerHTML = ""; const config = formations[currentFormation];
+            const pitch = document.getElementById("pitch-area");
+            const bench = document.getElementById("bench-area");
+            if(!pitch || !bench) return;
+            
+            pitch.innerHTML = ""; 
+            bench.innerHTML = ""; 
+            const config = formations[currentFormation];
+            
             currentPlayers.forEach((p, i) => {
                 const picto = createPicto(p, i);
-                if (i < 11) { picto.style.left = config.coords[i][0] + "%"; picto.style.top = config.coords[i][1] + "%"; pitch.appendChild(picto); } 
-                else { let subLeft = i === 11 ? 22 : (i === 12 ? 50 : 78); picto.style.left = subLeft + "%"; picto.style.top = "50%"; bench.appendChild(picto); }
+                if (i < 11) { 
+                    picto.style.left = config.coords[i][0] + "%"; 
+                    picto.style.top = config.coords[i][1] + "%"; 
+                    pitch.appendChild(picto); 
+                } else { 
+                    let subLeft = i === 11 ? 22 : (i === 12 ? 50 : 78); 
+                    picto.style.left = subLeft + "%"; 
+                    picto.style.top = "50%"; 
+                    bench.appendChild(picto); 
+                }
             });
+
             sparkIndices.forEach(idx => {
                 const all = [...pitch.children, ...bench.children];
-                if (all[idx]) { const r = all[idx].getBoundingClientRect(); triggerSpark(r.left + r.width/2, r.top + r.height/2); }
+                if (all[idx]) {
+                    const r = all[idx].getBoundingClientRect();
+                    triggerSpark(r.left + r.width/2, r.top + r.height/2);
+                }
             });
         }
 
         function createPicto(p, index) {
-            const div = document.createElement("div"); div.className = `player-picto`;
+            const div = document.createElement("div");
+            div.className = `player-picto`;
             if (firstTapIdx === index) div.classList.add('tap-selected');
             div.innerHTML = `<div class="picto-head"></div><div class="picto-body"></div><div class="picto-name">${p.name}</div>`;
+            
             const onStart = (e) => {
                 const evt = e.touches ? e.touches[0] : e;
-                activeEl = div; activeIdx = index; startX = evt.clientX; startY = evt.clientY; isDragging = false;
+                activeEl = div;
+                activeIdx = index;
+                startX = evt.clientX;
+                startY = evt.clientY;
+                isDragging = false;
             };
+            
             div.addEventListener('mousedown', onStart);
             div.addEventListener('touchstart', onStart, {passive: false});
             return div;
@@ -267,9 +310,13 @@
         const onMove = (e) => {
             if (!activeEl) return;
             const evt = e.touches ? e.touches[0] : e;
-            const dx = evt.clientX - startX, dy = evt.clientY - startY;
+            const dx = evt.clientX - startX;
+            const dy = evt.clientY - startY;
             if (Math.hypot(dx, dy) > 5) {
-                if (!isDragging) { isDragging = true; activeEl.classList.add('dragging'); }
+                if (!isDragging) {
+                    isDragging = true;
+                    activeEl.classList.add('dragging');
+                }
                 activeEl.style.transform = `translate(${dx}px, ${dy}px)`;
             }
         };
@@ -278,67 +325,113 @@
             if (!activeEl) return;
             const evt = e.changedTouches ? e.changedTouches[0] : e;
             let changedIndices = [];
+            
             if (!isDragging) {
-                if (firstTapIdx === null) firstTapIdx = activeIdx;
-                else if (firstTapIdx === activeIdx) firstTapIdx = null;
-                else { [currentPlayers[firstTapIdx], currentPlayers[activeIdx]] = [currentPlayers[activeIdx], currentPlayers[firstTapIdx]]; changedIndices = [firstTapIdx, activeIdx]; firstTapIdx = null; }
+                if (firstTapIdx === null) {
+                    firstTapIdx = activeIdx;
+                } else if (firstTapIdx === activeIdx) {
+                    firstTapIdx = null;
+                } else {
+                    [currentPlayers[firstTapIdx], currentPlayers[activeIdx]] = [currentPlayers[activeIdx], currentPlayers[firstTapIdx]];
+                    changedIndices = [firstTapIdx, activeIdx];
+                    firstTapIdx = null;
+                }
             } else {
-                activeEl.classList.remove('dragging'); activeEl.style.display = "none";
+                activeEl.classList.remove('dragging');
+                activeEl.style.display = "none";
                 const target = document.elementFromPoint(evt.clientX, evt.clientY)?.closest('.player-picto');
                 activeEl.style.display = "";
                 if (target) {
                     const all = [...document.getElementById("pitch-area").children, ...document.getElementById("bench-area").children];
                     const tIdx = all.indexOf(target);
-                    if (tIdx !== -1 && tIdx !== activeIdx) { [currentPlayers[activeIdx], currentPlayers[tIdx]] = [currentPlayers[tIdx], currentPlayers[activeIdx]]; changedIndices = [activeIdx, tIdx]; }
+                    if (tIdx !== -1 && tIdx !== activeIdx) {
+                        [currentPlayers[activeIdx], currentPlayers[tIdx]] = [currentPlayers[tIdx], currentPlayers[activeIdx]];
+                        changedIndices = [activeIdx, tIdx];
+                    }
                 }
                 firstTapIdx = null;
             }
-            activeEl.style.transform = ""; activeEl = null; updateFormation(changedIndices);
+            activeEl.style.transform = "";
+            activeEl = null;
+            updateFormation(changedIndices);
         };
 
-        window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove, {passive: false});
-        window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, {passive: false});
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
 
         function initNav() {
-            const nav = document.getElementById("form-nav"); nav.innerHTML = "";
+            const nav = document.getElementById("form-nav");
+            if(!nav) return;
+            nav.innerHTML = "";
             Object.keys(formations).forEach(key => {
-                const btn = document.createElement("button"); btn.className = `form-btn ${key === currentFormation ? 'active' : ''}`; btn.innerText = key;
-                btn.onclick = () => { currentFormation = key; initNav(); updateFormation(); }; nav.appendChild(btn);
+                const btn = document.createElement("button");
+                btn.className = `form-btn ${key === currentFormation ? 'active' : ''}`;
+                btn.innerText = key;
+                btn.onclick = () => {
+                    currentFormation = key;
+                    initNav();
+                    updateFormation();
+                };
+                nav.appendChild(btn);
             });
         }
 
         document.getElementById("analyzeBtn").onclick = () => {
-            const scoreDisp = document.getElementById("power-score"); scoreDisp.style.display = "block";
+            const scoreDisp = document.getElementById("power-score");
+            scoreDisp.style.display = "block";
             const config = formations[currentFormation];
             let totalPower = 0;
             for(let i=0; i<11; i++) {
-                const p = currentPlayers[i]; const role = config.roles[i]; totalPower += p.power;
-                if (!p.bestPos.includes(role)) { if (p.subPos && p.subPos.includes(role)) totalPower -= 2; else totalPower -= 5; }
+                const p = currentPlayers[i];
+                const role = config.roles[i];
+                totalPower += p.power;
+                if (!p.bestPos.includes(role)) {
+                    if (p.subPos && p.subPos.includes(role)) totalPower -= 2;
+                    else totalPower -= 5;
+                }
             }
             currentScore = Math.max(0, Math.min(100, totalPower));
             let count = 0;
             const timer = setInterval(() => {
-                scoreDisp.innerText = Math.floor(Math.random() * 100); count++;
-                if (count > 12) { clearInterval(timer); scoreDisp.innerText = currentScore; scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)"; document.getElementById("saveBtn").style.display = "block"; document.getElementById("shareBtn").style.display = "block"; }
+                scoreDisp.innerText = Math.floor(Math.random() * 100);
+                count++;
+                if (count > 12) {
+                    clearInterval(timer);
+                    scoreDisp.innerText = currentScore;
+                    scoreDisp.style.color = (currentScore >= 95) ? "#fff" : "var(--roma-gold)";
+                    document.getElementById("saveBtn").style.display = "block";
+                    document.getElementById("shareBtn").style.display = "block";
+                }
             }, 80);
         };
 
         document.getElementById("shareBtn").onclick = () => {
             const emojiMap = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
             const scoreEmoji = String(currentScore).split('').map(num => emojiMap[parseInt(num)]).join('');
-            const text = encodeURIComponent(`ローマのイレブンを組んでみた\n戦闘力：${scoreEmoji}\n\n#ASRoma #RomaTactics\n`);
+            const text = encodeURIComponent(`ローマのイレブンを組んでみた！\n戦闘力：${scoreEmoji}\n\n#ASRoma #RomaTactics\n`);
             window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
         };
 
         document.getElementById("saveBtn").onclick = () => {
             html2canvas(document.getElementById("capture-area"), { scale: 2, backgroundColor: "#000" }).then(c => {
-                const a = document.createElement("a"); a.download = "roma_squad.png"; a.href = c.toDataURL(); a.click();
+                const a = document.createElement("a");
+                a.download = "roma_squad.png";
+                a.href = c.toDataURL();
+                a.click();
             });
         };
+
         document.getElementById("startBtn").onclick = startGacha;
+
         function triggerSpark(x, y) {
-            const spark = document.createElement("div"); spark.className = "spark"; spark.style.left = x + "px"; spark.style.top = y + "px";
-            document.body.appendChild(spark); setTimeout(() => spark.remove(), 300);
+            const spark = document.createElement("div");
+            spark.className = "spark";
+            spark.style.left = x + "px";
+            spark.style.top = y + "px";
+            document.body.appendChild(spark);
+            setTimeout(() => spark.remove(), 300);
         }
     </script>
 </body>
